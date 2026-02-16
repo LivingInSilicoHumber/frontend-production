@@ -8,6 +8,7 @@ import { MoleculeIcon } from "@/components/molecule-icon";
 import { SmilesInput } from "@/components/smiles-input";
 import { ResultModal } from "@/components/result-modal";
 import BatchPredict from "@/components/BatchPredict";
+import Navbar from "@/components/Navbar";
 
 // ✨ YENİ ABİMİZ (Canlı API Adresi)
 const API_BASE_URL = "https://chem-prediction-api-ca.azurewebsites.net";
@@ -129,6 +130,7 @@ export default function TBDrugDiscoveryPage() {
 
     return (
         <main className="relative min-h-screen overflow-hidden bg-background">
+            <Navbar />
             <MolecularBackground />
 
             <div className="relative z-10 flex min-h-screen items-center justify-center p-4">

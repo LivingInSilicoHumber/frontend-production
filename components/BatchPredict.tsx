@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 
-// Backend'den gelen veri yapısı
+// Data structure from Backend
 type APIResponse = {
     smiles: string;
     result: string;
@@ -44,7 +44,7 @@ export default function BatchPredict({ apiBaseUrl }: BatchPredictProps) {
                 .filter((s) => s.length > 1);
 
             if (smilesList.length === 0) {
-                toast.error("Dosya boş veya format hatalı.");
+                toast.error("File is empty or has invalid format.");
                 setLoading(false);
                 return;
             }
@@ -58,15 +58,15 @@ export default function BatchPredict({ apiBaseUrl }: BatchPredictProps) {
             });
 
             if (!res.ok) {
-                throw new Error("API isteği başarısız oldu.");
+                throw new Error("API request failed.");
             }
 
             const data: APIResponse[] = await res.json();
             setResults(data);
-            toast.success(`${data.length} molekül başarıyla analiz edildi!`);
+            toast.success(`${data.length} molecules analyzed successfully!`);
         } catch (err) {
             console.error(err);
-            toast.error("Bir hata oluştu. API bağlantısını kontrol edin.");
+            toast.error("An error occurred. Please check your API connection.");
         } finally {
             setLoading(false);
             e.target.value = "";
@@ -141,13 +141,12 @@ export default function BatchPredict({ apiBaseUrl }: BatchPredictProps) {
                                         <td className="px-4 py-2 font-mono text-xs text-slate-600 truncate max-w-[150px]" title={r.smiles}>
                                             {r.smiles}
                                         </td>
-                                        {/* ✅ DÜZELTME BURADA: startsWith("INACTIVE") kullanıyoruz */}
                                         <td className="px-4 py-2">
                                             <span
                                                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                                     r.result.startsWith("INACTIVE")
-                                                        ? "bg-red-100 text-red-800" // INACTIVE ise Kırmızı
-                                                        : "bg-green-100 text-green-800" // ACTIVE ise Yeşil
+                                                        ? "bg-red-100 text-red-800" // Red if INACTIVE
+                                                        : "bg-green-100 text-green-800" // Green if ACTIVE
                                                 }`}
                                             >
                                                 {r.result}

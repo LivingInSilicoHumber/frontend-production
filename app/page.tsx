@@ -7,22 +7,19 @@ import { MolecularBackground } from "@/components/molecular-background";
 import { MoleculeIcon } from "@/components/molecule-icon";
 import { SmilesInput } from "@/components/smiles-input";
 import { ResultModal } from "@/components/result-modal";
-import BatchPredict from "@/components/BatchPredict";
+import BatchPredict from "@/components/BatchPredict"; // 👈 Bu dosyanın içeriğini aşağıda güncelleyeceğiz
 import Navbar from "@/components/Navbar";
 
 // ✨ YENİ ABİMİZ (Canlı API Adresi)
 const API_BASE_URL = "https://chem-prediction-api-ca.azurewebsites.net";
 
-// Simple SMILES validation - checks for common patterns
+// ... (validateSmiles fonksiyonu aynı kalsın) ...
 function validateSmiles(smiles: string): boolean {
     if (!smiles || smiles.length < 2) return false;
-
     const validPattern = /^[A-Za-z0-9@+\-\[\]\(\)\\\/=#%.*]+$/;
     if (!validPattern.test(smiles)) return false;
-
     const brackets = { "(": ")", "[": "]" };
     const stack: string[] = [];
-
     for (const char of smiles) {
         if (char in brackets) {
             stack.push(brackets[char as keyof typeof brackets]);
@@ -30,11 +27,11 @@ function validateSmiles(smiles: string): boolean {
             if (stack.pop() !== char) return false;
         }
     }
-
     return stack.length === 0;
 }
 
 export default function TBDrugDiscoveryPage() {
+    // ... (State tanımları aynı kalsın) ...
     const [smilesInput, setSmilesInput] = useState("");
     const [isValid, setIsValid] = useState<boolean | null>(null);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -47,7 +44,6 @@ export default function TBDrugDiscoveryPage() {
         rfAccuracy: number;
         smiles: string;
     } | null>(null);
-
     const [moleculeImageUrl, setMoleculeImageUrl] = useState<string | null>(null);
 
     const handleInputChange = useCallback((value: string) => {
@@ -58,50 +54,35 @@ export default function TBDrugDiscoveryPage() {
 
     const handleAnalyze = useCallback(async () => {
         if (!isValid) {
-            toast.error("Invalid SMILES detected", {
-                description: "Please enter a valid molecular structure.",
-                duration: 3000,
-            });
+            toast.error("Invalid SMILES detected", { description: "Please enter a valid structure.", duration: 3000 });
             return;
         }
 
-        // 🖼️ GÖRSEL URL GÜNCELLEMESİ
-        // Backend'de '/molecule-image' endpoint'i varsa buradan çeker
         setMoleculeImageUrl(`${API_BASE_URL}/molecule-image?smiles=${encodeURIComponent(smilesInput)}`);
-
         setIsAnalyzing(true);
         setShowModal(true);
         setIsLoading(true);
 
         try {
-            // 🚀 API URL GÜNCELLEMESİ (Azure'a istek atar)
             const res = await fetch(`${API_BASE_URL}/predict`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ smiles: smilesInput }),
             });
 
-            if (!res.ok) {
-                throw new Error(`API Error: ${res.statusText}`);
-            }
-
+            if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
             const data = await res.json();
 
             setResult({
-                isActive: data.result === "Active", // Backend'den dönen veriye göre uyarlandı
+                isActive: data.result === "Active",
                 confidence: data.confidence,
-                gnnAccuracy: data.details.gnn_prediction || 0, // Backend key isimlerine dikkat
+                gnnAccuracy: data.details.gnn_prediction || 0,
                 rfAccuracy: data.details.rf_prediction || 0,
                 smiles: smilesInput,
             });
         } catch (error) {
             console.error("Prediction failed:", error);
-            toast.error("Analysis failed", {
-                description: "Could not connect to the API. Please try again.",
-                duration: 3000,
-            });
+            toast.error("Analysis failed", { description: "Check API connection.", duration: 3000 });
             setShowModal(false);
         } finally {
             setIsLoading(false);
@@ -109,13 +90,13 @@ export default function TBDrugDiscoveryPage() {
         }
     }, [isValid, smilesInput]);
 
+    // ... (handleReset, handleNewAnalysis, handleCloseModal aynı kalsın) ...
     const handleReset = useCallback(() => {
         setSmilesInput("");
         setIsValid(null);
         setResult(null);
         setMoleculeImageUrl(null);
     }, []);
-
     const handleNewAnalysis = useCallback(() => {
         setShowModal(false);
         setResult(null);
@@ -123,7 +104,6 @@ export default function TBDrugDiscoveryPage() {
         setIsValid(null);
         setMoleculeImageUrl(null);
     }, []);
-
     const handleCloseModal = useCallback(() => {
         setShowModal(false);
     }, []);
@@ -141,9 +121,10 @@ export default function TBDrugDiscoveryPage() {
                     className="w-full max-w-2xl"
                 >
                     <div className="bg-card border border-border rounded-3xl shadow-xl p-8 md:p-10">
+                        {/* ... (Header kısmı aynı) ... */}
                         <div className="text-center mb-8">
                             <motion.h1
-                                className="text-2xl md:text-3xl font-bold text-foreground mb-3 text-balance"
+                                className="text-2xl md:text-3xl font-bold text-foreground mb-3"
                                 initial={{ opacity: 0, y: -20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.2 }}
@@ -158,7 +139,6 @@ export default function TBDrugDiscoveryPage() {
                             >
                                 AI-powered compound efficacy prediction
                             </motion.p>
-
                             <motion.div
                                 className="flex justify-center mt-6"
                                 initial={{ opacity: 0, scale: 0.5 }}
@@ -182,30 +162,30 @@ export default function TBDrugDiscoveryPage() {
                             <div className="mt-8 border-t pt-6">
                                 <h2 className="text-lg font-semibold mb-3 text-center">Batch Prediction (Upload SMILES File)</h2>
 
-                                <BatchPredict />
+                                {/* 👇 BURASI ÖNEMLİ: URL'i prop olarak gönderiyoruz */}
+                                <BatchPredict apiBaseUrl={API_BASE_URL} />
                             </div>
                         </motion.div>
 
+                        {/* ... (Resim gösterme kısmı aynı) ... */}
                         {moleculeImageUrl && (
                             <div className="mt-6 flex justify-center">
                                 <div className="bg-card border border-border rounded-xl p-4">
                                     <p className="text-center text-sm text-muted-foreground mb-2">2D Molecular Structure</p>
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
                                     <img
                                         src={moleculeImageUrl}
                                         alt="Molecule structure"
                                         className="max-w-full rounded-md border"
                                         onError={(e) => {
-                                            // Eğer backend'de resim endpointi yoksa kullanıcıya çaktırmadan gizleyelim
                                             e.currentTarget.style.display = "none";
-                                            toast.error("Molecule image not available in API.");
+                                            toast.error("Molecule image not available.");
                                         }}
                                     />
                                 </div>
                             </div>
                         )}
                     </div>
-
+                    {/* ... (Footer aynı) ... */}
                     <motion.p
                         className="text-center text-muted-foreground text-sm mt-6"
                         initial={{ opacity: 0 }}
@@ -216,7 +196,6 @@ export default function TBDrugDiscoveryPage() {
                     </motion.p>
                 </motion.div>
             </div>
-
             <ResultModal
                 isOpen={showModal}
                 isLoading={isLoading}
